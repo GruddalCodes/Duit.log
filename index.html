@@ -433,7 +433,7 @@ const PAY_METHODS = ['PayNow','Credit Card','Cash','NETS','GrabPay','Others'];
 let transactions = [];
 let budgets      = JSON.parse(localStorage.getItem('ledger_budgets') || JSON.stringify({Food:400,Transport:150,Shopping:200,Entertainment:100,Bills:300,Health:100}));
 let goals        = JSON.parse(localStorage.getItem('ledger_goals')   || '[]');
-let scriptUrl    = localStorage.getItem('ledger_script_url') || 'https://script.google.com/macros/s/AKfycbx_xdZJ3cJH3BRQCVomcIeJUTYrdd6biFCG34prjBJSckuvbgJu0SGniE_GTMXyMogUaw/exec';
+let scriptUrl    = localStorage.getItem('ledger_script_url') || '';
 let selectedCat  = 'Food';
 let selectedType = 'expense';
 let selectedMood = '';
@@ -994,12 +994,15 @@ async function saveBudgetInline(cat) {
   if(isNaN(val) || val < 0) { alert('Please enter a valid amount.'); return; }
   budgets[cat] = val;
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
-  // Sync to Sheets in background
+  // Sync to Sheets only if script supports it
   if(scriptUrl) {
-    fetch(scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'saveBudgets', budgets })
-    }).catch(e => console.log('Budget sync failed:', e));
+    const supported = await checkScriptSupports('getBudgets');
+    if(supported) {
+      fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveBudgets', budgets })
+      }).catch(e => console.log('Budget sync failed:', e));
+    }
   }
   renderBudgets();
 }
@@ -1075,6 +1078,19 @@ function updateApiStatus(s) {
   el.className   = 'api-status ' + cls;
 }
 
+async function checkScriptSupports(action) {
+  // Quick check — does the deployed script respond correctly to this action?
+  try {
+    const res  = await fetch(scriptUrl + '?action=' + action);
+    const data = await res.json();
+    // getBudgets should return an object with known category keys, not a status message
+    if(action === 'getBudgets') {
+      return data && typeof data === 'object' && !Array.isArray(data) && !data.status;
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
 async function saveBudgets() {
   ['Food','Transport','Shopping','Entertainment','Bills','Health'].forEach(cat => {
     const el = document.getElementById('bset-'+cat);
@@ -1083,9 +1099,15 @@ async function saveBudgets() {
   // Save locally first — instant
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
 
-  // Sync to Sheets in background
+  // Sync to Sheets — but only if script supports budget actions
   if(scriptUrl) {
     try {
+      const supported = await checkScriptSupports('getBudgets');
+      if(!supported) {
+        alert('Budgets saved locally ✓\n\n⚠️ Your Apps Script needs to be updated to sync budgets.\nRedeploy the latest duit-log-apps-script.js first.');
+        renderBudgets();
+        return;
+      }
       await fetch(scriptUrl, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveBudgets', budgets })
