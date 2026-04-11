@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LEDGER — Personal Finance</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<title>Duit.log — Personal Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
@@ -35,14 +35,14 @@ body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-ser
 button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 
 /* ── LAYOUT ── */
-.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;max-width:100vw;overflow-x:hidden;}
 @media(max-width:768px){.app{grid-template-columns:1fr;}}
 
 /* ── SIDEBAR ── */
 .sidebar{background:var(--panel);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;box-shadow:2px 0 12px rgba(0,0,0,.04);}
 @media(max-width:768px){.sidebar{display:none;}}
 .logo{padding:0 24px 28px;border-bottom:1px solid var(--border);}
-.logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+.logo-text{font-family:'Share Tech Mono',monospace;font-size:22px;font-weight:800;letter-spacing:-0.5px;}
 .logo-text span{color:var(--accent);}
 .logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
 .nav{padding:20px 0;flex:1;}
@@ -51,7 +51,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .nav-item.active{color:var(--accent2);border-left-color:var(--accent);background:var(--panel2);}
 .nav-icon{font-size:16px;width:20px;text-align:center;}
 .sidebar-streak{margin:0 16px 20px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px;}
-.streak-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--gold);}
+.streak-num{font-family:'Share Tech Mono',monospace;font-size:28px;font-weight:800;color:var(--gold);}
 .streak-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
 
 /* ── MOBILE NAV ── */
@@ -62,21 +62,21 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .mobile-nav-icon{font-size:20px;}
 
 /* ── MAIN ── */
-.main{overflow-y:auto;}
-.page{display:none;padding:32px 28px 100px;}
+.main{overflow-y:auto;overflow-x:hidden;min-width:0;}
+.page{display:none;padding:32px 28px 100px;max-width:1100px;}
 .page.active{display:block;}
 @media(max-width:768px){.page{padding:20px 16px 100px;}}
 
 /* ── PAGE HEADER ── */
 .page-header{margin-bottom:28px;}
-.page-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px;}
+.page-title{font-family:'Share Tech Mono',monospace;font-size:28px;font-weight:800;letter-spacing:-0.5px;}
 .page-sub{font-size:14px;color:var(--muted);margin-top:4px;}
 
 /* ── STAT CARDS ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .stat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-.stat-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;}
+.stat-value{font-family:'Share Tech Mono',monospace;font-size:26px;font-weight:800;line-height:1;}
 .stat-sub{font-size:12px;color:var(--muted);margin-top:4px;}
 .stat-card.highlight{background:var(--accent);border-color:var(--accent);}
 .stat-card.highlight .stat-label{color:rgba(255,255,255,.7);}
@@ -87,8 +87,8 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .quicklog{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:28px;}
 .quicklog-title{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
 .amount-input-wrap{position:relative;margin-bottom:16px;}
-.currency-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--muted);}
-.amount-input{width:100%;background:var(--panel2);border:2px solid var(--border);border-radius:12px;padding:14px 16px 14px 44px;font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text);outline:none;transition:border-color .2s;}
+.currency-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:'Share Tech Mono',monospace;font-size:24px;font-weight:700;color:var(--muted);}
+.amount-input{width:100%;background:var(--panel2);border:2px solid var(--border);border-radius:12px;padding:14px 16px 14px 44px;font-family:'Share Tech Mono',monospace;font-size:28px;font-weight:800;color:var(--text);outline:none;transition:border-color .2s;}
 .amount-input:focus{border-color:var(--accent);}
 .amount-input::placeholder{color:var(--dim);}
 .log-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
@@ -99,7 +99,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
 .type-btn.active.expense{background:#fef2f2;border-color:var(--red);color:var(--red);}
 .type-btn.active.income{background:#f0fdf4;border-color:var(--green);color:#15803d;}
-.log-btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;margin-top:4px;}
+.log-btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;margin-top:4px;}
 .log-btn:hover{background:var(--accent2);transform:translateY(-1px);}
 .log-btn:disabled{background:var(--dim);cursor:not-allowed;transform:none;}
 .log-feedback{margin-top:12px;padding:12px 16px;background:var(--panel2);border-radius:10px;font-size:13px;color:var(--green);display:none;border:1px solid rgba(52,211,153,.2);}
@@ -151,7 +151,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .tx-info{flex:1;min-width:0;}
 .tx-desc{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .tx-meta{font-size:12px;color:var(--muted);margin-top:2px;}
-.tx-amount{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex-shrink:0;}
+.tx-amount{font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:700;flex-shrink:0;}
 .tx-amount.expense{color:var(--red);}
 .tx-amount.income{color:var(--green);}
 .tx-empty{text-align:center;padding:48px;color:var(--muted);font-size:14px;}
@@ -163,7 +163,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 .goal-target{font-size:13px;color:var(--muted);margin-bottom:14px;}
 .goal-progress-bg{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-bottom:8px;}
 .goal-progress-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .6s ease;}
-.goal-pct{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);}
+.goal-pct{font-family:'Share Tech Mono',monospace;font-size:22px;font-weight:800;color:var(--accent);}
 .goal-meta{font-size:12px;color:var(--muted);margin-top:4px;}
 .add-goal-btn{width:100%;padding:14px;background:transparent;border:2px dashed var(--border);border-radius:14px;color:var(--muted);font-size:14px;cursor:pointer;transition:all .2s;}
 .add-goal-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -208,8 +208,8 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-text">LEDGER<span>.</span></div>
-      <div class="logo-sub">Personal Finance</div>
+      <div class="logo-text">Duit<span>.log</span></div>
+      <div class="logo-sub">Your Money, Your Way</div>
     </div>
     <nav class="nav">
       <div class="nav-item active" onclick="goTo('dashboard')" id="nav-dashboard">
@@ -371,7 +371,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
         <div class="settings-row">
           <div>
             <div class="settings-label">Apps Script URL</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px;">https://script.google.com/macros/s/AKfycbx_xdZJ3cJH3BRQCVomcIeJUTYrdd6biFCG34prjBJSckuvbgJu0SGniE_GTMXyMogUaw/exec</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Paste your deployed Web App URL here</div>
           </div>
           <span class="api-status pending" id="api-status">⚡ Not set</span>
         </div>
@@ -391,7 +391,7 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
         <div class="settings-title">Logging Streak</div>
         <div class="settings-row">
           <div class="settings-label">Current Streak</div>
-          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--gold);" id="settings-streak">0🔥</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:22px;font-weight:800;color:var(--gold);" id="settings-streak">0🔥</div>
         </div>
         <div class="settings-row">
           <div class="settings-label">Total Entries Logged</div>
@@ -637,13 +637,45 @@ async function sendToSheets(entry) {
 async function loadFromSheets() {
   if(!scriptUrl) return;
   try {
+    // Load transactions
     const res  = await fetch(scriptUrl + '?action=get');
     const data = await res.json();
-    if(Array.isArray(data)) {
-      transactions = data;
+    if(Array.isArray(data) && data.length > 0) {
+      transactions = data.map(r => ({
+        date:           r.date        || '',
+        amount:         r.amount      || 0,
+        category:       r.category    || '',
+        type:           r.type        || 'expense',
+        description:    r.description || '',
+        payment_method: r.payment_method || '',
+        merchant:       r.merchant    || '',
+        mood:           r.mood        || '',
+        necessity:      r.necessity   || '',
+        notes:          r.notes       || '',
+        timestamp:      r.timestamp   || '',
+      }));
       saveLocal();
+      updateStreak();
+      const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
+      if(activePage === 'dashboard')    renderDashboard();
+      if(activePage === 'transactions') renderTransactions();
+      if(activePage === 'analytics')    renderAnalytics();
+      if(activePage === 'budgets')      renderBudgets();
     }
-  } catch(e) { console.log('Sheets load failed, using local data'); }
+  } catch(e) { console.log('Sheets transactions load failed, using local data'); }
+
+  // Load budgets separately
+  try {
+    const res2  = await fetch(scriptUrl + '?action=getBudgets');
+    const bData = await res2.json();
+    if(bData && typeof bData === 'object' && !Array.isArray(bData) && Object.keys(bData).length) {
+      budgets = { ...budgets, ...bData };
+      localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
+      const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
+      if(activePage === 'budgets')  renderBudgets();
+      if(activePage === 'settings') renderSettings();
+    }
+  } catch(e) { console.log('Sheets budgets load failed, using local data'); }
 }
 
 // ── LOCAL STORAGE ──
@@ -689,7 +721,7 @@ function renderDashboard() {
   document.getElementById('dash-greeting').textContent = greet + ' 👋';
   document.getElementById('dash-date').textContent = now.toLocaleDateString('en-SG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-  const monthStr = now.toLocaleDateString('en-SG',{month:'2-digit',year:'numeric'}).split('/').reverse().join('/').substring(3);
+  const monthStr = `${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
   const todayStr = now.toLocaleDateString('en-SG');
   const weekAgo  = new Date(now - 7*86400000);
   const prevWeekAgo = new Date(now - 14*86400000);
@@ -769,7 +801,7 @@ function renderAnalytics() {
   for(let i=5;i>=0;i--) {
     const d = new Date(); d.setMonth(d.getMonth()-i);
     const lbl = d.toLocaleDateString('en-SG',{month:'short',year:'2-digit'});
-    const mStr = d.toLocaleDateString('en-SG',{month:'2-digit',year:'numeric'}).split('/').reverse().join('/').substring(3);
+    const mStr = `${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const exp = transactions.filter(t=>t.type==='expense'&&t.date?.includes(mStr)).reduce((s,t)=>s+parseFloat(t.amount||0),0);
     const inc = transactions.filter(t=>t.type==='income' &&t.date?.includes(mStr)).reduce((s,t)=>s+parseFloat(t.amount||0),0);
     last6.push({lbl,exp,inc});
@@ -827,7 +859,7 @@ function drawChart(id, type, data) {
     data,
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#6b7280',font:{family:'Space Grotesk',size:11}}}},
+      plugins:{legend:{labels:{color:'#6b7280',font:{family:'Oxanium',size:11}}}},
       scales: type==='bar'||type==='line' ? {
         x:{ticks:{color:'#6b7280'},grid:{color:'#e5e7ef'}},
         y:{ticks:{color:'#6b7280'},grid:{color:'#e5e7ef'}}
@@ -839,7 +871,7 @@ function drawChart(id, type, data) {
 // ── BUDGETS ──
 function renderBudgets() {
   const now = new Date();
-  const monthStr = now.toLocaleDateString('en-SG',{month:'2-digit',year:'numeric'}).split('/').reverse().join('/').substring(3);
+  const monthStr = `${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
   document.getElementById('budget-month-label').textContent = now.toLocaleDateString('en-SG',{month:'long',year:'numeric'});
 
   const cats = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
@@ -879,7 +911,7 @@ function renderBudgets() {
             id="binput-${cat}"
             type="number" min="0" step="50"
             value="${budget}"
-            style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:16px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text);outline:none;transition:border-color .2s;"
+            style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:16px;font-family:'Share Tech Mono',monospace;font-weight:700;color:var(--text);outline:none;transition:border-color .2s;"
             onfocus="this.style.borderColor='var(--accent)'"
             onblur="this.style.borderColor='var(--border)'"
             onkeydown="if(event.key==='Enter') saveBudgetInline('${cat}')"/>
@@ -917,12 +949,19 @@ function cancelEditBudget(cat) {
   document.getElementById('bedit-'+cat).style.display    = '';
 }
 
-function saveBudgetInline(cat) {
+async function saveBudgetInline(cat) {
   const val = parseFloat(document.getElementById('binput-'+cat).value);
   if(isNaN(val) || val < 0) { alert('Please enter a valid amount.'); return; }
   budgets[cat] = val;
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
-  renderBudgets(); // re-render to show updated bar
+  // Sync to Sheets in background
+  if(scriptUrl) {
+    fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveBudgets', budgets })
+    }).catch(e => console.log('Budget sync failed:', e));
+  }
+  renderBudgets();
 }
 
 // ── GOALS ──
@@ -996,13 +1035,29 @@ function updateApiStatus(s) {
   el.className   = 'api-status ' + cls;
 }
 
-function saveBudgets() {
+async function saveBudgets() {
   ['Food','Transport','Shopping','Entertainment','Bills','Health'].forEach(cat => {
     const el = document.getElementById('bset-'+cat);
     if(el) budgets[cat] = parseFloat(el.value)||0;
   });
+  // Save locally first — instant
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
-  alert('Budgets saved! ✓');
+
+  // Sync to Sheets in background
+  if(scriptUrl) {
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveBudgets', budgets })
+      });
+      alert('Budgets saved and synced to Google Sheets ✓');
+    } catch(e) {
+      alert('Budgets saved locally ✓ (Sheets sync failed — check your connection)');
+    }
+  } else {
+    alert('Budgets saved locally ✓ (Connect Google Sheets in Settings to sync across devices)');
+  }
+  renderBudgets();
 }
 
 // ── UTILS ──
@@ -1014,6 +1069,8 @@ function escHtml(s) {
 loadLocal();
 updateStreak();
 renderDashboard();
+// Pull latest from Sheets on load — keeps all devices in sync
+if(scriptUrl) loadFromSheets();
 
 // Populate month filter for transactions
 const now2 = new Date();
