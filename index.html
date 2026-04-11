@@ -668,8 +668,15 @@ async function loadFromSheets() {
   try {
     const res2  = await fetch(scriptUrl + '?action=getBudgets');
     const bData = await res2.json();
-    if(bData && typeof bData === 'object' && !Array.isArray(bData) && Object.keys(bData).length) {
-      budgets = { ...budgets, ...bData };
+    const VALID_CATS = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
+    // Only accept if response has at least one valid category key with a numeric value
+    const isValidBudget = bData && typeof bData === 'object' && !Array.isArray(bData) &&
+      VALID_CATS.some(cat => typeof bData[cat] === 'number' || !isNaN(parseFloat(bData[cat])));
+    if(isValidBudget) {
+      // Only merge known category keys — ignore any status/message fields
+      VALID_CATS.forEach(cat => {
+        if(bData[cat] !== undefined) budgets[cat] = parseFloat(bData[cat]) || 0;
+      });
       localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
       const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
       if(activePage === 'budgets')  renderBudgets();
@@ -732,7 +739,8 @@ function renderDashboard() {
   const todayTx  = transactions.filter(t => t.date===todayStr).length;
   const weekExp  = transactions.filter(t => t.type==='expense' && new Date(t.timestamp) >= weekAgo).reduce((s,t)=>s+parseFloat(t.amount||0),0);
   const prevExp  = transactions.filter(t => t.type==='expense' && new Date(t.timestamp) >= prevWeekAgo && new Date(t.timestamp) < weekAgo).reduce((s,t)=>s+parseFloat(t.amount||0),0);
-  const totalBudget = Object.values(budgets).reduce((s,v)=>s+v,0);
+  const BUDGET_CATS = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
+  const totalBudget = BUDGET_CATS.reduce((s,cat) => s + (parseFloat(budgets[cat])||0), 0);
 
   document.getElementById('stat-month-spend').textContent = '$' + monthExp.toFixed(0);
   document.getElementById('stat-month-budget').textContent = 'of $' + totalBudget + ' budget';
