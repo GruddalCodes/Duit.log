@@ -781,17 +781,49 @@ function renderTransactions() {
     : '<div class="tx-empty">No transactions match your filters.</div>';
 }
 
-function txHtml(t) {
+function txHtml(t, showDelete=false) {
   const color = CAT_COLOR[t.category] || 'var(--muted)';
   const isInc = t.type === 'income';
-  return `<div class="tx-item">
+  const ts    = escHtml(t.timestamp||'');
+  return `<div class="tx-item" id="tx-${ts}">
     <div class="tx-icon" style="background:${color}22;">${CAT_EMOJI[t.category]||'📦'}</div>
     <div class="tx-info">
       <div class="tx-desc">${escHtml(t.description||t.category)}</div>
       <div class="tx-meta">${t.date} · ${t.category}${t.payment_method?' · '+t.payment_method:''}${t.necessity?' · '+t.necessity:''}</div>
     </div>
     <div class="tx-amount ${t.type}">${isInc?'+':'-'}$${parseFloat(t.amount||0).toFixed(2)}</div>
+    <button onclick="deleteTransaction('${ts}')"
+      title="Delete transaction"
+      style="background:none;border:none;color:var(--dim);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;flex-shrink:0;"
+      onmouseover="this.style.color='var(--red)';this.style.background='#fee2e2'"
+      onmouseout="this.style.color='var(--dim)';this.style.background='none'">✕</button>
   </div>`;
+}
+
+async function deleteTransaction(timestamp) {
+  if(!confirm('Delete this transaction? This cannot be undone.')) return;
+
+  // Remove from local array
+  transactions = transactions.filter(t => t.timestamp !== timestamp);
+  saveLocal();
+  updateStreak();
+
+  // Re-render current page
+  const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
+  if(activePage === 'dashboard')    renderDashboard();
+  if(activePage === 'transactions') renderTransactions();
+  if(activePage === 'analytics')    renderAnalytics();
+  if(activePage === 'budgets')      renderBudgets();
+
+  // Sync deletion to Sheets in background
+  if(scriptUrl) {
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteTransaction', timestamp })
+      });
+    } catch(e) { console.log('Delete sync failed:', e); }
+  }
 }
 
 // ── ANALYTICS ──
