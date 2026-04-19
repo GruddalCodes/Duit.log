@@ -668,15 +668,8 @@ async function loadFromSheets() {
   try {
     const res2  = await fetch(scriptUrl + '?action=getBudgets');
     const bData = await res2.json();
-    const VALID_CATS = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
-    // Only accept if response has at least one valid category key with a numeric value
-    const isValidBudget = bData && typeof bData === 'object' && !Array.isArray(bData) &&
-      VALID_CATS.some(cat => typeof bData[cat] === 'number' || !isNaN(parseFloat(bData[cat])));
-    if(isValidBudget) {
-      // Only merge known category keys — ignore any status/message fields
-      VALID_CATS.forEach(cat => {
-        if(bData[cat] !== undefined) budgets[cat] = parseFloat(bData[cat]) || 0;
-      });
+    if(bData && typeof bData === 'object' && !Array.isArray(bData) && Object.keys(bData).length) {
+      budgets = { ...budgets, ...bData };
       localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
       const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
       if(activePage === 'budgets')  renderBudgets();
@@ -739,8 +732,7 @@ function renderDashboard() {
   const todayTx  = transactions.filter(t => t.date===todayStr).length;
   const weekExp  = transactions.filter(t => t.type==='expense' && new Date(t.timestamp) >= weekAgo).reduce((s,t)=>s+parseFloat(t.amount||0),0);
   const prevExp  = transactions.filter(t => t.type==='expense' && new Date(t.timestamp) >= prevWeekAgo && new Date(t.timestamp) < weekAgo).reduce((s,t)=>s+parseFloat(t.amount||0),0);
-  const BUDGET_CATS = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
-  const totalBudget = BUDGET_CATS.reduce((s,cat) => s + (parseFloat(budgets[cat])||0), 0);
+  const totalBudget = Object.values(budgets).reduce((s,v)=>s+v,0);
 
   document.getElementById('stat-month-spend').textContent = '$' + monthExp.toFixed(0);
   document.getElementById('stat-month-budget').textContent = 'of $' + totalBudget + ' budget';
@@ -994,15 +986,12 @@ async function saveBudgetInline(cat) {
   if(isNaN(val) || val < 0) { alert('Please enter a valid amount.'); return; }
   budgets[cat] = val;
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
-  // Sync to Sheets only if script supports it
+  // Sync to Sheets in background
   if(scriptUrl) {
-    const supported = await checkScriptSupports('getBudgets');
-    if(supported) {
-      fetch(scriptUrl, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'saveBudgets', budgets })
-      }).catch(e => console.log('Budget sync failed:', e));
-    }
+    fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveBudgets', budgets })
+    }).catch(e => console.log('Budget sync failed:', e));
   }
   renderBudgets();
 }
@@ -1078,19 +1067,6 @@ function updateApiStatus(s) {
   el.className   = 'api-status ' + cls;
 }
 
-async function checkScriptSupports(action) {
-  // Quick check — does the deployed script respond correctly to this action?
-  try {
-    const res  = await fetch(scriptUrl + '?action=' + action);
-    const data = await res.json();
-    // getBudgets should return an object with known category keys, not a status message
-    if(action === 'getBudgets') {
-      return data && typeof data === 'object' && !Array.isArray(data) && !data.status;
-    }
-    return true;
-  } catch(e) { return false; }
-}
-
 async function saveBudgets() {
   ['Food','Transport','Shopping','Entertainment','Bills','Health'].forEach(cat => {
     const el = document.getElementById('bset-'+cat);
@@ -1099,15 +1075,9 @@ async function saveBudgets() {
   // Save locally first — instant
   localStorage.setItem('ledger_budgets', JSON.stringify(budgets));
 
-  // Sync to Sheets — but only if script supports budget actions
+  // Sync to Sheets in background
   if(scriptUrl) {
     try {
-      const supported = await checkScriptSupports('getBudgets');
-      if(!supported) {
-        alert('Budgets saved locally ✓\n\n⚠️ Your Apps Script needs to be updated to sync budgets.\nRedeploy the latest duit-log-apps-script.js first.');
-        renderBudgets();
-        return;
-      }
       await fetch(scriptUrl, {
         method: 'POST',
         body: JSON.stringify({ action: 'saveBudgets', budgets })
