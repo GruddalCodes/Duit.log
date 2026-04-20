@@ -4,6 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Duit.log — Personal Finance</title>
+<link rel="manifest" href="duit-manifest.json"/>
+<meta name="theme-color" content="#5b4cf5"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Duit.log"/>
+<link rel="apple-touch-icon" href="duit-icon-192.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -1240,6 +1246,15 @@ for(let i=0;i<12;i++){
   const d = new Date(); d.setMonth(d.getMonth()-i);
   const lbl = d.toLocaleDateString('en-SG',{month:'long',year:'numeric'});
   const opt = document.createElement('option'); opt.textContent=lbl; mSel2.appendChild(opt);
+}
+</script>
+<script>
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('duit-service-worker.js')
+      .then(() => console.log('Duit.log SW registered'))
+      .catch(e => console.log('SW failed:', e));
+  });
 }
 </script>
 </body>
