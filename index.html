@@ -4,12 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Duit.log — Personal Finance</title>
-<link rel="manifest" href="duit-manifest.json"/>
-<meta name="theme-color" content="#5b4cf5"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Duit.log"/>
-<link rel="apple-touch-icon" href="duit-icon-192.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -251,10 +245,19 @@ button,input,select,textarea{font-family:'Space Grotesk',sans-serif;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <div class="page-title" id="dash-greeting">Good morning 👋</div>
-        <div class="page-sub" id="dash-date"></div>
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div>
+          <div class="page-title" id="dash-greeting">Good morning 👋</div>
+          <div class="page-sub" id="dash-date"></div>
+        </div>
+        <button onclick="manualSync()" id="syncBtn"
+          style="flex-shrink:0;margin-top:4px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;"
+          onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          ↻ Sync
+        </button>
       </div>
+      <div id="syncStatus" style="font-size:11px;color:var(--muted);margin-bottom:12px;min-height:16px;"></div>
 
       <!-- Mascot banner -->
       <div id="mascot-banner" style="margin-bottom:24px;border-radius:16px;overflow:hidden;background:var(--panel);border:1px solid var(--border);"></div>
@@ -734,11 +737,15 @@ async function sendToSheets(entry) {
   } catch(e) { return false; }
 }
 
-async function loadFromSheets() {
-  if(!scriptUrl) return;
+async function loadFromSheets(manual=false) {
+  if(!scriptUrl) {
+    setSyncStatus('Not connected — add your Apps Script URL in Settings');
+    return;
+  }
+  setSyncBtn(true);
+  setSyncStatus('Syncing...', 'var(--muted)');
   try {
-    // Load transactions
-    const res  = await fetch(scriptUrl + '?action=get');
+    const res  = await fetch(scriptUrl + '?action=get&t=' + Date.now()); // cache-bust
     const data = await res.json();
     if(Array.isArray(data) && data.length > 0) {
       transactions = data.map(r => ({
@@ -762,18 +769,22 @@ async function loadFromSheets() {
       if(activePage === 'analytics')    renderAnalytics();
       if(activePage === 'budgets')      renderBudgets();
     }
-  } catch(e) { console.log('Sheets transactions load failed, using local data'); }
+    const now = new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
+    localStorage.setItem('duit_last_sync', now);
+    setSyncStatus(`Synced at ${now} · ${transactions.length} transactions`, 'var(--green)');
+  } catch(e) {
+    setSyncStatus('Sync failed — check connection or Apps Script URL', 'var(--red)');
+    console.log('Sheets transactions load failed:', e);
+  }
 
   // Load budgets separately
   try {
-    const res2  = await fetch(scriptUrl + '?action=getBudgets');
+    const res2  = await fetch(scriptUrl + '?action=getBudgets&t=' + Date.now());
     const bData = await res2.json();
     const VALID_CATS = ['Food','Transport','Shopping','Entertainment','Bills','Health'];
-    // Only accept if response has at least one valid category key with a numeric value
     const isValidBudget = bData && typeof bData === 'object' && !Array.isArray(bData) &&
       VALID_CATS.some(cat => typeof bData[cat] === 'number' || !isNaN(parseFloat(bData[cat])));
     if(isValidBudget) {
-      // Only merge known category keys — ignore any status/message fields
       VALID_CATS.forEach(cat => {
         if(bData[cat] !== undefined) budgets[cat] = parseFloat(bData[cat]) || 0;
       });
@@ -783,6 +794,22 @@ async function loadFromSheets() {
       if(activePage === 'settings') renderSettings();
     }
   } catch(e) { console.log('Sheets budgets load failed, using local data'); }
+
+  setSyncBtn(false);
+}
+
+function setSyncStatus(msg, color='var(--muted)') {
+  const el = document.getElementById('syncStatus');
+  if(el) { el.textContent = msg; el.style.color = color; }
+}
+
+function setSyncBtn(loading) {
+  const btn = document.getElementById('syncBtn');
+  if(btn) btn.textContent = loading ? '↻ Syncing...' : '↻ Sync';
+}
+
+async function manualSync() {
+  await loadFromSheets(true);
 }
 
 // ── LOCAL STORAGE ──
@@ -1236,8 +1263,11 @@ function escHtml(s) {
 loadLocal();
 updateStreak();
 renderDashboard();
-// Pull latest from Sheets on load — keeps all devices in sync
-if(scriptUrl) loadFromSheets();
+// Show last sync time from cache while fresh data loads
+const lastSync = localStorage.getItem('duit_last_sync');
+if(lastSync) setSyncStatus(`Last synced ${lastSync} · syncing now...`, 'var(--muted)');
+// Always pull from Sheets on load regardless of cached state
+loadFromSheets();
 
 // Populate month filter for transactions
 const now2 = new Date();
@@ -1246,15 +1276,6 @@ for(let i=0;i<12;i++){
   const d = new Date(); d.setMonth(d.getMonth()-i);
   const lbl = d.toLocaleDateString('en-SG',{month:'long',year:'numeric'});
   const opt = document.createElement('option'); opt.textContent=lbl; mSel2.appendChild(opt);
-}
-</script>
-<script>
-if('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('duit-service-worker.js')
-      .then(() => console.log('Duit.log SW registered'))
-      .catch(e => console.log('SW failed:', e));
-  });
 }
 </script>
 </body>
